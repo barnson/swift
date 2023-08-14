@@ -928,100 +928,58 @@ endlocal
 :PackageToolchain
 setlocal enableextensions enabledelayedexpansion
 
-:: Package bld.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\bld\bld.wixproj ^
+:: Build web bundle
+msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\bundle\installer.wixproj ^
+  -m ^
   -restore ^
+  -p:BundleFlavor=web ^
+  -p:BaseReleaseDownloadUrl=todo://base/release/download/url ^
   -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\bld\ ^
+  -p:BaseOutputPath=%PackageRoot%\web\ ^
   -p:DEVTOOLS_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
-  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\bld\bld.msi
-
-:: Package cli.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\cli\cli.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\cli\ ^
-  -p:DEVTOOLS_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
-  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\cli\cli.msi
-
-:: Package dbg.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\dbg\dbg.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\dbg\ ^
-  -p:DEVTOOLS_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
-  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\dbg\dbg.msi
-
-:: Package ide.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\ide\ide.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\ide\ ^
-  -p:DEVTOOLS_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
-  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\ide\ide.msi
-
-:: Package sdk.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\sdk\sdk.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\sdk\ ^
+  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
   -p:PLATFORM_ROOT=%PlatformRoot%\ ^
   -p:SDK_ROOT=%SDKInstallRoot%\
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\sdk\sdk.msi
+::-p:INCLUDE_SWIFT_FORMAT=true
+::-p:SWIFT_FORMAT_BUILD=directory\containing\swift-format.exe
+::-p:INCLUDE_SWIFT_INSPECT=true
+::-p:SWIFT_INSPECT_BUILD=directory\containing\swift-inspect.exe
 
-:: Package runtime.msi
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\runtimemsi\runtimemsi.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\runtime\ ^
-  -p:SDK_ROOT=%SDKInstallRoot%\
-:: TODO(compnerd) actually perform the code-signing
-:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\runtime\runtime.msi
-
-:: Collate MSIs
-move %PackageRoot%\bld\Release\amd64\bld.msi %PackageRoot% || (exit /b)
-move %PackageRoot%\cli\Release\amd64\cli.msi %PackageRoot% || (exit /b)
-move %PackageRoot%\dbg\Release\amd64\dbg.msi %PackageRoot% || (exit /b)
-move %PackageRoot%\ide\Release\amd64\ide.msi %PackageRoot% || (exit /b)
-move %PackageRoot%\sdk\Release\amd64\sdk.msi %PackageRoot% || (exit /b)
-move %PackageRoot%\runtime\Release\amd64\runtime.msi %PackageRoot% || (exit /b)
-
-:: Build Installer
-msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\bundle\installer.wixproj ^
-  -restore ^
-  -p:Configuration=Release ^
-  -p:BaseOutputPath=%PackageRoot%\installer\ ^
-  -p:MSI_LOCATION=%PackageRoot%\
 :: TODO(compnerd) actually perform the code-signing
 :: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\installer\installer.exe
 
+
+:: Build offline bundle
+msbuild %SourceRoot%\swift-installer-scripts\platforms\Windows\bundle\installer.wixproj ^
+  -m ^
+  -restore ^
+  -p:BundleFlavor=offline ^
+  -p:Configuration=Release ^
+  -p:BaseOutputPath=%PackageRoot%\offline\ ^
+  -p:DEVTOOLS_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
+  -p:TOOLCHAIN_ROOT=%BuildRoot%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain ^
+  -p:PLATFORM_ROOT=%PlatformRoot%\ ^
+  -p:SDK_ROOT=%SDKInstallRoot%\
+::-p:INCLUDE_SWIFT_FORMAT=true
+::-p:SWIFT_FORMAT_BUILD=directory\containing\swift-format.exe
+::-p:INCLUDE_SWIFT_INSPECT=true
+::-p:SWIFT_INSPECT_BUILD=directory\containing\swift-inspect.exe
+
+:: TODO(compnerd) actually perform the code-signing
+:: signtool sign /f Apple_CodeSign.pfx /p Apple_CodeSign_Password /tr http://timestamp.digicert.com /fd sha256 %PackageRoot%\installer\installer.exe
+
+
 :: Stage Artifacts
 md %BuildRoot%\artifacts
+md %BuildRoot%\artifacts\web
+md %BuildRoot%\artifacts\offline
 
-:: Redistributable libraries for developers
-:: bld
-move %PackageRoot%\bld.msi %BuildRoot%\artifacts || (exit /b)
-:: cli
-move %PackageRoot%\cli.msi %BuildRoot%\artifacts || (exit /b)
-:: dbg
-move %PackageRoot%\dbg.msi %BuildRoot%\artifacts || (exit /b)
-:: ide
-move %PackageRoot%\ide.msi %BuildRoot%\artifacts || (exit /b)
-:: sdk
-move %PackageRoot%\sdk.msi %BuildRoot%\artifacts || (exit /b)
-:: runtime
-move %PackageRoot%\runtime.msi %BuildRoot%\artifacts || (exit /b)
-:: installer
-move %PackageRoot%\installer\Release\amd64\installer.exe %BuildRoot%\artifacts || (exit /b)
+move %PackageRoot%\web\Release\amd64\*.exe %BuildRoot%\artifacts\web || (exit /b)
+move %PackageRoot%\web\Release\amd64\*.msi %BuildRoot%\artifacts\web || (exit /b)
+move %PackageRoot%\web\Release\amd64\*.cab %BuildRoot%\artifacts\web || (exit /b)
+
+move %PackageRoot%\offline\Release\amd64\*.exe %BuildRoot%\artifacts\offline || (exit /b)
+
 
 goto :eof
 endlocal
